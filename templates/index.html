@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entab Enquiry Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #666;
+        }
+
+        .filters-container {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .filters-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .filter-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .apply-filters-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .clear-filters-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Entab Enquiry Assistant</h1>
+            <p>Ask questions about student applications and data</p>
+        </div>
+
+        <div class="filters-container">
+            <div class="filters-title">Data Filters (Optional)</div>
+            <div class="filters-grid">
+                <input type="text" id="schoolCode" class="filter-input" placeholder="School Code (e.g., ENTABI)">
+                <select id="gender" class="filter-input">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                <input type="text" id="class" class="filter-input" placeholder="Class">
+                <input type="text" id="location" class="filter-input" placeholder="Location">
+                <input type="number" id="appliedYear" class="filter-input" placeholder="Applied Year">
+                <input type="number" id="limit" class="filter-input" placeholder="Limit (max 100)" max="100">
+            </div>
+            <button class="apply-filters-btn" onclick="applyFilters()">Apply Filters</button>
+            <button class="clear-filters-btn" onclick="clearFilters()">Clear Filters</button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-content">
+                    Hello! I'm your Entab Enquiry Assistant. You can ask me questions about student applications, or use the filters above to narrow down the data. Try asking something like "Show me all students" or "How many male students applied?"
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div>Processing your request...</div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="input-group">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Ask about student data..." onkeypress="handleKeyPress(event)">
+                <button class="send-button" id="sendButton" onclick="sendMessage()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilters = {};
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function applyFilters() {
+            currentFilters = {};
+
+            const schoolCode = document.getElementById('schoolCode').value.trim();
+            const gender = document.getElementById('gender').value;
+            const classValue = document.getElementById('class').value.trim();
+            const location = document.getElementById('location').value.trim();
+            const appliedYear = document.getElementById('appliedYear').value;
+            const limit = document.getElementById('limit').value;
+
+            if (schoolCode) currentFilters.schoolCode = schoolCode;
+            if (gender) currentFilters.gender = gender;
+            if (classValue) currentFilters.class = classValue;
+            if (location) currentFilters.location = location;
+            if (appliedYear) currentFilters.appliedYear = parseInt(appliedYear);
+            if (limit) currentFilters.limit = parseInt(limit);
+
+            addMessage('user', `Filters applied: ${JSON.stringify(currentFilters, null, 2)}`);
+            addMessage('bot', 'Filters have been applied. Now ask me questions about the student data with these filters in mind.');
+        }
+
+        function clearFilters() {
+            currentFilters = {};
+            document.getElementById('schoolCode').value = '';
+            document.getElementById('gender').value = '';
+            document.getElementById('class').value = '';
+            document.getElementById('location').value = '';
+            document.getElementById('appliedYear').value = '';
+            document.getElementById('limit').value = '';
+
+            addMessage('bot', 'All filters have been cleared. You can now query the complete dataset.');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage('user', message);
+            input.value = '';
+
+            // Show loading
+            showLoading(true);
+
+            try {
+                // Send request to FastAPI backend
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        user_input: message,
+                        filters: JSON.stringify(currentFilters)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    addMessage('bot', data.response);
+                } else {
+                    addMessage('bot', `Error: ${data.detail || 'Something went wrong'}`);
+                }
+            } catch (error) {
+                addMessage('bot', `Error: Unable to connect to the server. ${error.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function addMessage(sender, message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = message;
+
+            messageDiv.appendChild(messageContent);
+            messagesContainer.appendChild(messageDiv);
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const sendButton = document.getElementById('sendButton');
+
+            loading.style.display = show ? 'block' : 'none';
+            sendButton.disabled = show;
+        }
+
+        // Focus on input when page loads
+        window.onload = function() {
+            document.getElementById('chatInput').focus();
+        };
+    </script>
+</body>
+</html>
