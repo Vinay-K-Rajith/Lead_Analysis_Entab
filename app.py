@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # Title and description
-st.title("🎓 Educational Lead Scoring System")
+st.title("🎓 Entab's Lead Scoring System")
 st.markdown("---")
 
 
