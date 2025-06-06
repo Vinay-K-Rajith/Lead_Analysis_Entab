@@ -178,7 +178,7 @@ def calculate_lead_score(location_score, how_you_know_us_score, sibling_in_schoo
     total_weights = sum(weights)
 
     lead_score = (weighted_sum / total_weights)
-    return round(lead_score, 2)
+    return round(lead_score, 2) + 5
 
 
 def categorize_lead(score):
